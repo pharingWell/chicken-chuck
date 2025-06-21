@@ -1,4 +1,5 @@
 # Chicken Chuck
+an entry in [Mini Jam 187: Duality](https://itch.io/jam/mini-jam-187-duality).  
 themes are **DUALITY** and **EVERYTHING HAS A COST**
 
 ### Gameplay
