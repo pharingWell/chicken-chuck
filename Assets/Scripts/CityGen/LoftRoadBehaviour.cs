@@ -23,7 +23,7 @@ namespace CityGen
         List<SplineData<float>> floatData = new List<SplineData<float>>();
 
         [SerializeField] float m_Width = 2f;
-        private float _widthOld = 1f;
+        // private float _widthOld = 1f;
         
         public List<SplineData<float>> Widths
         {
@@ -98,6 +98,14 @@ namespace CityGen
                 //GetComponent<MeshRenderer>().sharedMaterial = m_Material;
                 return m_Mesh;
             }
+        }
+
+        public void Init(Mesh meshIn, Material material, int segments, int textureScale)
+        {
+            m_Mesh = meshIn;
+            m_Material = material;
+            m_SegmentsPerMeter = segments;
+            m_TextureScale = textureScale;
         }
 
         [Obsolete("Use SegmentsPerMeter instead.", false)]
