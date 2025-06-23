@@ -150,7 +150,7 @@ namespace CityGen
 
             if (m_Mesh != null)
 #if  UNITY_EDITOR
-                DestroyImmediate(m_Mesh);
+                DestroyImmediate(m_Mesh, true);
 #else
                 Destroy(m_Mesh);
 #endif

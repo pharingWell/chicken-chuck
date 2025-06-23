@@ -1,20 +1,18 @@
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine.Splines;
 using Random = UnityEngine.Random;
 
 namespace CityGen
 {
-
-    
-    
     struct SplineObject
     {
-
         public LoftRoadBehaviour LoftScript;
         public SplineContainer Container;
         public GameObject ObjectRef;
@@ -25,10 +23,10 @@ namespace CityGen
             Container = splineContainer;
             ObjectRef = gameObject;
         }
-        
-        
-        
-        public static SplineObject MakeNewSplineObject(int id, Mesh mesh, Material material, int segmentsPerMeter, int textureScale)
+
+
+        public static SplineObject MakeNewSplineObject(int id, Mesh mesh, Material material, int segmentsPerMeter,
+            int textureScale)
         {
             GameObject splineObject = new GameObject("Spline Container (" + id + ")");
             SplineContainer container = splineObject.AddComponent<SplineContainer>();
@@ -64,11 +62,16 @@ namespace CityGen
         private SplineContainer _diagonalSplinesContainer;
 
         private JobHandle _gridGenJobHandle;
-        private NativeArray<NativeSpline> _resultNativeArray;
+        private NativeArray<Vector3> _positionsNativeArray;
+        private NativeArray<bool> _splitsNativeArray;
+        private int _jobStage = 0;
 
         private void Start()
         {
-            _resultNativeArray = new NativeArray<NativeSpline>(gridColumns + gridRows, Allocator.Persistent);
+            _jobStage = 0;
+            // length: vertical 
+            _positionsNativeArray = new NativeArray<Vector3>(gridColumns * gridRows * 2, Allocator.Persistent);
+            _splitsNativeArray = new NativeArray<bool>(_positionsNativeArray.Length, Allocator.Persistent);
             GridSplines splineJob = new GridSplines()
             {
                 GridColumns = gridColumns,
@@ -76,32 +79,66 @@ namespace CityGen
                 TileSize = tileSize,
                 DeadEndPercent = deadEndPercent,
                 Position = position,
-                Result = _resultNativeArray
+                KnotPositions = _positionsNativeArray,
+                Enabled = _splitsNativeArray,
+                RandomSeed = (uint)DateTime.Now.Ticks
             };
-            _gridGenJobHandle = splineJob.ScheduleByRef(_resultNativeArray.Length,
-                16);
+            
+            _gridGenJobHandle = splineJob.ScheduleByRef(_positionsNativeArray.Length,
+                1);
+            _jobStage = 1;
+            
         }
+
+
 
         private void Update()
         {
-            if (_gridGenJobHandle.IsCompleted)
+            if (_jobStage == 1)
             {
+                _gridGenJobHandle.Complete();
+                _jobStage = 2;
+            }
+            else if (_gridGenJobHandle.IsCompleted && _jobStage == 2) {
                 int index = 0;
-                SplineObject objV = MakeNewSplineObject(0);
-                for (; index < gridColumns; index++)
+                SplineObject objH = MakeNewSplineObject(0);
+                int increment = gridColumns;
+                while (index < gridColumns * gridRows) //horizontal
                 {
-                    objV.Container.AddSpline(new Spline(_resultNativeArray[index]));
+                    IReadOnlyList<int> splits =
+                        _splitsNativeArray.Skip(index).Take(gridColumns)
+                            .Select((val, ind) => new { val, ind })
+                            .Where(x => x.val)
+                            .Select(x => x.ind)
+                            .ToList();
+                    IReadOnlyList<BezierKnot> knots = _positionsNativeArray.Skip(index).Take(gridColumns)
+                        .Select(v3 => new BezierKnot(v3, Vector3.right, Vector3.right))
+                        .ToList();
+                    objH.Container.AddSpline(new Spline(new NativeSpline(knots, splits, false, float4x4.identity)));
+                    index += gridColumns;
                 }
-
-                objV.LoftScript.LoftAllRoads();
-                SplineObject objH = MakeNewSplineObject(1);
-                for (; index < gridRows; index++)
-                {
-                    objH.Container.AddSpline(new Spline(_resultNativeArray[index]));
-                }
-
                 objH.LoftScript.LoftAllRoads();
-                // _resultNativeArray.Dispose();
+                
+                //vertical
+                SplineObject objV = MakeNewSplineObject(1);
+                while (index < gridColumns * gridRows * 2) //horizontal
+                {
+                    IReadOnlyList<int> splits =
+                        _splitsNativeArray.Skip(index).Take(gridRows)
+                            .Select((val, ind) => new { val, ind })
+                            .Where(x => x.val)
+                            .Select(x => x.ind)
+                            .ToList();
+                    IReadOnlyList<BezierKnot> knots = _positionsNativeArray.Skip(index).Take(gridRows)
+                        .Select(v3 => new BezierKnot(v3, Vector3.right, Vector3.right))
+                        .ToList();
+                    objV.Container.AddSpline(new Spline(new NativeSpline(knots, splits, false, float4x4.identity)));
+                    index += gridRows;
+                }
+                objV.LoftScript.LoftAllRoads();
+                _jobStage = 3;
+                _positionsNativeArray.Dispose();
+                _splitsNativeArray.Dispose();
             }
         }
 
@@ -109,6 +146,5 @@ namespace CityGen
         {
             return SplineObject.MakeNewSplineObject(id, roadMesh, roadMaterial, roadSegmentsPerMeter, roadTextureScale);
         }
-
     }
 }

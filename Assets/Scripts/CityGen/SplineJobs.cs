@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -9,12 +10,9 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Splines;
 
-
-
 namespace CityGen
 {
-        //     [BurstCompile]: add burst to project
-        
+    [BurstCompile]
     public struct GridSplines : IJobParallelFor
     {
         // Input data for the job
@@ -26,81 +24,52 @@ namespace CityGen
         [Unity.Collections.ReadOnly] public uint RandomSeed;
         
         [WriteOnly]
-        [NativeDisableContainerSafetyRestriction]
-        public NativeArray<NativeSpline> Result;
-        
-        // public GridSplines(int gridRows = 20, int gridColumns = 20, float tileSize = 40f, float deadEndPercent = 10, Vector3 position = default)
-        // {
-        //     GridRows = gridRows;
-        //     GridColumns = gridColumns;
-        //     DeadEndPercent = deadEndPercent;
-        //     Position = position;
-        //     Result = default;
-        //     TileSize = tileSize;
-        // }
-
+        public NativeArray<Vector3> KnotPositions;
+        public NativeArray<bool> Enabled;
 
         public void Execute(int index)
         {
             
             // vertical lines
-            var positions = new List<Vector3>();
-            var splits = new List<int>();
             var rnd = new Unity.Mathematics.Random((uint)index + RandomSeed);
-            if (index < GridColumns)
+            if (index < GridColumns * GridRows)
             {
-                Horizontal(index, rnd, out List<Vector3> knots, out List<int> splitsOut);
-                positions.AddRange(knots);
-                splits.AddRange(splitsOut);
+                Horizontal(index, rnd);
             }
             else
             {
-                Vertical(index, rnd, out List<Vector3> knots, out List<int> splitsOut);
-                positions.AddRange(knots);
-                splits.AddRange(splitsOut);
+                Vertical(index, rnd);
             }
-           // Result[index] = //new NativeSpline(knots.AsReadOnly(), splits.AsReadOnly(), false, float4x4.identity);
-           
-          
         }
 
-        void Vertical(int index, Unity.Mathematics.Random rnd, out List<Vector3> knotPositions, out List<int> splits)
+        void Vertical(int index, Unity.Mathematics.Random rnd)
         {
-            splits = new List<int>();
-            knotPositions = new List<Vector3>(GridRows);
-            // TODO: To allow for only using one NativeArray, this needs to be broken down into a single piece.
-            for (int y = 0; y < GridRows; y++)  //
+            int y = index % GridRows;
+            if (rnd.NextInt() % 100 >= DeadEndPercent)
             {
-                if (rnd.NextInt() % 100 >= DeadEndPercent)
-                {
-                    knotPositions.Add(Position + new Vector3(index - (GridRows + 2) / 2f, 0, y - (GridColumns + 2) / 2f));
-                }
-                else //dead end
-                {
-                    knotPositions.Add(Vector3.zero);
-                    splits.Add(y);
-                }
+                KnotPositions[index] = Position + new Vector3( math.floor(index / (float)GridRows) - (GridRows + 2) / 2f, 0, y - (GridColumns + 2) / 2f) * TileSize;
+                Enabled[index] = true;
             }
-            splits.Add(-1); //end character
+            else //dead end
+            {
+                KnotPositions[index] = Vector3.zero;
+                Enabled[index] = false;
+            }
         }
         
-        void Horizontal(int index, Unity.Mathematics.Random rnd, out List<Vector3> knotPositions, out List<int> splits)
+        void Horizontal(int index, Unity.Mathematics.Random rnd)
         {
-            splits = new List<int>();
-            knotPositions = new List<Vector3>(GridColumns);
-            for (int x = 0; x < GridColumns; x++)
+            int x = index % GridColumns;
+            if (rnd.NextInt() % 100 >= DeadEndPercent)
             {
-                if (rnd.NextInt() % 100 >= DeadEndPercent)
-                {
-                    knotPositions.Add(Position + new Vector3(x - (GridRows + 2) / 2f, 0, index - (GridColumns + 2) / 2f));
-                }
-                else //dead end
-                {
-                    knotPositions.Add(Vector3.zero);
-                    splits.Add(x);
-                }
+                KnotPositions[index] = Position + new Vector3(x - (GridRows + 2) / 2f, 0, math.floor(index / (float)GridColumns) - (GridColumns + 2) / 2f) * TileSize;
+                Enabled[index] = true;
             }
-            splits.Add(-1); //end character
+            else //dead end
+            {
+                KnotPositions[index] = Vector3.zero;
+                Enabled[index] = false;
+            }
         }
         
         // BezierKnot NewKnot(int x, int y, Vector3 direction)
@@ -112,6 +81,8 @@ namespace CityGen
 
 
     }
+    
+    
 
 
 }
