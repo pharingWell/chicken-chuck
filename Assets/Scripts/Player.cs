@@ -8,10 +8,12 @@ public class Player : MonoBehaviour
     public Rigidbody rb;
     private float maxSpeed = 30f;
     private float maxReverseSpeed = -5f;
-    private float acceleration = 8f;
+    private float acceleration = 10f;
     private float turnSpeed = 0;
-    private float minAngularAcceleration = 0.08f;
-    private float maxAngularAcceleration = 0.15f;
+    private float turnSpeedAtMaxSpeed = 0.1f;
+    private float turnSpeedAtLowSpeed = 0.15f;
+    private float brakeForce = 20f;
+    private float frictionForce = 5f;
 
     private Vector3 direction = new Vector3(0, 0, 1);
 
@@ -27,20 +29,38 @@ public class Player : MonoBehaviour
     void Update()
     {
         InputHandling();
-        turnSpeed = maxAngularAcceleration + (minAngularAcceleration - maxAngularAcceleration) * Mathf.Pow((rb.velocity.magnitude / maxSpeed), 2);
+        turnSpeed = turnSpeedAtLowSpeed + (turnSpeedAtMaxSpeed - turnSpeedAtLowSpeed) * Mathf.Pow((rb.velocity.magnitude / maxSpeed), 2);
         speedText.text = Mathf.Round(rb.velocity.magnitude * 2.237f * 10)/10f + " MPH";
-    }
 
-    private void FixedUpdate()
-    {
-        rb.velocity = direction * rb.velocity.magnitude;
+        if (rb.velocity.magnitude > 0.1f &&
+            !Input.GetKey(KeyCode.A) &&
+            !Input.GetKey(KeyCode.D))
+        {
+            Vector3 velocityDir = rb.velocity.normalized;
+
+            // Only update direction if velocity is mostly forward (dot > 0)
+            float alignment = Vector3.Dot(direction, velocityDir);
+
+            if (alignment > 0f) // between 0 (90°) and 1 (fully forward)
+            {
+                direction = Vector3.Slerp(direction, velocityDir, 2f * Time.deltaTime);
+                direction.Normalize();
+                transform.rotation = Quaternion.LookRotation(direction);
+            }
+        }
+
+
     }
 
     private void InputHandling()
     {
-        if (Input.GetKey(KeyCode.S))
+        if (Input.GetKey(KeyCode.Space))
         {
             ActiveBrake();
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
+            Reverse();
         }
         else if (Input.GetKey(KeyCode.W))
         {
@@ -61,61 +81,106 @@ public class Player : MonoBehaviour
         }
     }
 
+    // applies a strong friction force when actively braking
     public void ActiveBrake()
     {
-        rb.velocity *= 0.9985f;
+        float appliedForce = brakeForce;
 
-        // Optional: stop completely when very slow
-        if (rb.velocity.magnitude < 0.2f)
+        if (rb.velocity.magnitude > 0.2f)
         {
-            Reverse();
+            Vector3 deceleration = rb.velocity.normalized * appliedForce * Time.deltaTime;
+
+            // Check if applying deceleration would flip direction
+            if (Vector3.Dot(rb.velocity, rb.velocity - deceleration) < 0)
+            {
+                rb.velocity = Vector3.zero;
+            }
+            else
+            {
+                rb.velocity -= deceleration;
+            }
         }
-    }
-
-    public void FrictionBrake()
-    {
-        // Apply friction
-        rb.velocity *= 0.99975f;
-
-        // Optional: stop completely when very slow
-        if (rb.velocity.magnitude < 0.2f && rb.velocity.magnitude > -0.2f)
+        else
         {
             rb.velocity = Vector3.zero;
         }
     }
 
+    // applies constant friction when not accelerating
+    public void FrictionBrake()
+    {
+        float appliedForce = frictionForce;
+
+        if (rb.velocity.magnitude > 0.2f)
+        {
+            Vector3 deceleration = rb.velocity.normalized * appliedForce * Time.deltaTime;
+
+            // Check if applying deceleration would flip velocity direction
+            if (Vector3.Dot(rb.velocity, rb.velocity - deceleration) < 0)
+            {
+                rb.velocity = Vector3.zero;
+            }
+            else
+            {
+                rb.velocity -= deceleration;
+            }
+        }
+        else
+        {
+            rb.velocity = Vector3.zero;
+        }
+    }
+
+
     public void Reverse()
     {
-        if (rb.velocity.magnitude > maxReverseSpeed)
+        float forwardSpeed = Vector3.Dot(rb.velocity, direction);
+
+        if (forwardSpeed > maxReverseSpeed)
         {
-            rb.velocity -= acceleration * direction * Time.deltaTime;
+            rb.velocity += acceleration * -direction * Time.deltaTime;
         }
     }
 
     public void Turn(bool right)
     {
-        float rotationDirection = right ? 1f : -1f;
+        // Calculate signed speed along the forward direction
+        float forwardSpeed = Vector3.Dot(rb.velocity, direction);
+
+        // Flip turning direction if reversing
+        float rotationDirection = (right ? 1f : -1f) * (forwardSpeed < 0f ? -1f : 1f);
 
         // Only turn if moving
-        if (Mathf.Abs(rb.velocity.magnitude) > 0.01f)
+        //if (rb.velocity.magnitude > 0.01f)
         {
             float angle = turnSpeed * rotationDirection;
 
-            // Rotate direction vector around Y-axis
+            // Rotate direction vector
             Quaternion turnRotation = Quaternion.Euler(0f, angle, 0f);
             direction = turnRotation * direction;
             direction.Normalize();
 
             // Rotate the GameObject to face the new direction
             transform.rotation = Quaternion.LookRotation(direction);
+
+            // Preserve signed speed while reorienting velocity
+            float signedSpeed = Mathf.Sign(forwardSpeed) * rb.velocity.magnitude;
+            rb.velocity = Vector3.Lerp(rb.velocity, direction * signedSpeed, 0.2f);
         }
     }
 
     public void Accelerate()
     {
-        if (rb.velocity.magnitude < maxSpeed)
+        float currentSpeed = Vector3.Dot(rb.velocity, direction);
+
+        if (currentSpeed < maxSpeed)
         {
-            rb.velocity += acceleration * direction * Time.deltaTime;
+            float speedRatio = Mathf.Clamp01(currentSpeed / maxSpeed);
+            float boost = 1f - speedRatio; // More boost at lower speeds
+            float scaledAccel = acceleration * (0.35f + boost * 0.65f); // Range: 0.5x to 1x
+
+            rb.velocity += direction * scaledAccel * Time.deltaTime;
         }
     }
+
 }
