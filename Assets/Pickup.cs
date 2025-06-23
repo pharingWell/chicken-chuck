@@ -12,9 +12,7 @@ public class Pickup : MonoBehaviour
 
     [SerializeField] private Vector3 mapCenter;
 
-    private readonly int toEdge = 4;
-
-    private readonly int tileSize = 50;
+    private readonly float tileSize = 50f;
 
     private Vector3 mapBL;
 
@@ -71,11 +69,42 @@ public class Pickup : MonoBehaviour
         Vector3 pos = gameObject.transform.position;
         while ((gameObject.transform.position - pos).magnitude < 50)
         {
-            pos = mapBL + new Vector3(tileSize * Random.Range(0, 8), 0,
-                tileSize * Random.Range(0, toEdge * 2));
+            pos = mapBL + new Vector3(tileSize * Random.Range(0, 8), 0f,
+                tileSize * Random.Range(0, 8));
         }
-
-        gameObject.transform.position = pos;
+        int side = Random.Range(0, 9);
+        Quaternion rotation;
+        var position = pos;
+        if (side < 4) //x axis
+        {
+            position.x += Random.Range(-30, 31);
+            if (side % 2 == 0) //right side of the road
+            {
+                position.z -= 1.5f;
+                rotation = Quaternion.LookRotation(Vector3.right);
+            }
+            else //left side of the road
+            {
+                position.z += 1.5f;
+                rotation = Quaternion.LookRotation(Vector3.left);
+            }
+        }
+        else //z axis
+        {
+            position.z += Random.Range(-30, 31);
+            if (side % 2 == 0) //right side of the road
+            {
+                position.x += 1.5f;
+                rotation = Quaternion.LookRotation(Vector3.forward);
+            }
+            else //left side of the road
+            {
+                position.x -= 1.5f;
+                rotation = Quaternion.LookRotation(Vector3.back);
+            }
+        }
+        gameObject.transform.position = position;
+        gameObject.transform.rotation = rotation;
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -88,6 +117,7 @@ public class Pickup : MonoBehaviour
                 fuckingChickenText.enabled = true;
                 arrow.enabled = false;
                 cargo.SetActive(false);
+                gameObject.transform.position = mapBL * 2; //get it way out of the map
                 foreach (Transform child in gameObject.transform)
                 {
                     child.gameObject.SetActive(false);

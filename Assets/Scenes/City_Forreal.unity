@@ -3923,6 +3923,85 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 66397c6ae17e0f64aae36a2ca605216e, type: 3}
+--- !u!1 &166096487
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 166096488}
+  - component: {fileID: 166096489}
+  - component: {fileID: 166096490}
+  m_Layer: 5
+  m_Name: Delivery Option Text
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &166096488
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166096487}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2101965088}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -150}
+  m_SizeDelta: {x: 800, y: 80}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &166096489
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166096487}
+  m_CullTransparentMesh: 1
+--- !u!114 &166096490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166096487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 48
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 2
+    m_MaxSize: 48
+    m_Alignment: 4
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: 'Choose a Delivery Option: [1] or [2]'
 --- !u!4 &168777833 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4003667622006102093, guid: 66397c6ae17e0f64aae36a2ca605216e, type: 3}
@@ -4593,6 +4672,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: add865eaceb3152458f0c49eabaf040b, type: 3}
+--- !u!1 &189647521 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4288294166114165012, guid: add865eaceb3152458f0c49eabaf040b, type: 3}
+  m_PrefabInstance: {fileID: 189647520}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &192824940
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34667,9 +34751,21 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2533982938050594281, guid: ce50bc25a9118db4d9196b55cfede409, type: 3}
+      propertyPath: arrow
+      value: 
+      objectReference: {fileID: 351747951}
+    - target: {fileID: 2533982938050594281, guid: ce50bc25a9118db4d9196b55cfede409, type: 3}
+      propertyPath: cargo
+      value: 
+      objectReference: {fileID: 189647521}
+    - target: {fileID: 2533982938050594281, guid: ce50bc25a9118db4d9196b55cfede409, type: 3}
       propertyPath: mapCenter.y
       value: 0.07
       objectReference: {fileID: 0}
+    - target: {fileID: 2533982938050594281, guid: ce50bc25a9118db4d9196b55cfede409, type: 3}
+      propertyPath: fuckingChickenText
+      value: 
+      objectReference: {fileID: 166096490}
     - target: {fileID: 3084927772389197720, guid: ce50bc25a9118db4d9196b55cfede409, type: 3}
       propertyPath: m_LocalPosition.x
       value: -245.8
@@ -56873,6 +56969,7 @@ RectTransform:
   m_Children:
   - {fileID: 196527030}
   - {fileID: 351747950}
+  - {fileID: 166096488}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

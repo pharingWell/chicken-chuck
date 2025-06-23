@@ -41,7 +41,7 @@ public class Player : MonoBehaviour
             // Only update direction if velocity is mostly forward (dot > 0)
             float alignment = Vector3.Dot(direction, velocityDir);
 
-            if (alignment > 0f) // between 0 (90°) and 1 (fully forward)
+            if (alignment > 0f) // between 0 (90ï¿½) and 1 (fully forward)
             {
                 direction = Vector3.Slerp(direction, velocityDir, 2f * Time.deltaTime);
                 direction.Normalize();
@@ -165,7 +165,9 @@ public class Player : MonoBehaviour
 
             // Preserve signed speed while reorienting velocity
             float signedSpeed = Mathf.Sign(forwardSpeed) * rb.velocity.magnitude;
-            rb.velocity = Vector3.Lerp(rb.velocity, direction * signedSpeed, 0.2f);
+            float turnLerpRate = 8f;
+            rb.velocity = Vector3.Lerp(rb.velocity, direction * signedSpeed, 1f - Mathf.Exp(-turnLerpRate * Time.deltaTime));
+
         }
     }
 
