@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
+using UnityEngine.UI;
 
 public class Pickup : MonoBehaviour
 {
@@ -16,9 +17,16 @@ public class Pickup : MonoBehaviour
     private readonly int tileSize = 50;
 
     private Vector3 mapBL;
+
+    public Text fuckingChickenText;
+    public Image arrow;
+    public GameObject cargo;
+
     // Start is called before the first frame update
     void Start()
     {
+        fuckingChickenText.enabled = false;
+        cargo.SetActive(false);
         mapBL = mapCenter - 3.5f * new Vector3(tileSize, 0, tileSize);
         gameObject.transform.position = mapCenter - new Vector3(25f, 0, 25f);
         isPickup = true;
@@ -27,7 +35,16 @@ public class Pickup : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isPickup)
+        if (fuckingChickenText.enabled) 
+        {
+            if ((Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Alpha2)))
+            {
+                fuckingChickenText.enabled = false;
+                arrow.enabled = true;
+                toRandomLoc();
+            }
+        }
+        else if (isPickup)
         {
             foreach (Transform child in gameObject.transform)
             {
@@ -58,10 +75,24 @@ public class Pickup : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            Debug.LogError("Entered");
             //other.gameObject.TryGetComponent();
+
+            if (!isPickup)
+            {
+                fuckingChickenText.enabled = true;
+                arrow.enabled = false;
+                cargo.SetActive(false);
+                foreach (Transform child in gameObject.transform)
+                {
+                    child.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                toRandomLoc();
+                cargo.SetActive(true);
+            }
             isPickup = !isPickup;
-            toRandomLoc();
         }
     }
 }
