@@ -10,19 +10,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100024, guid: 434536a17f4ec8241aec5bbe0613aed8, type: 3}
       propertyPath: m_Name
-      value: New Prefab
+      value: Vespa
       objectReference: {fileID: 0}
     - target: {fileID: 400024, guid: 434536a17f4ec8241aec5bbe0613aed8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.2597575
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400024, guid: 434536a17f4ec8241aec5bbe0613aed8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.002
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400024, guid: 434536a17f4ec8241aec5bbe0613aed8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.6241589
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400024, guid: 434536a17f4ec8241aec5bbe0613aed8, type: 3}
       propertyPath: m_LocalRotation.w
