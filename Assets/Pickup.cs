@@ -51,14 +51,19 @@ public class Pickup : MonoBehaviour
 
     public void toRandomLoc()
     {
-        gameObject.transform.position = mapBL + new Vector3(tileSize * Random.Range(0, 8), 0,
-            tileSize * Random.Range(0, toEdge * 2));
+        Vector3 pos = gameObject.transform.position;
+        while ((gameObject.transform.position - pos).magnitude < 50)
+        {
+            pos = mapBL + new Vector3(tileSize * Random.Range(0, 8), 0,
+                tileSize * Random.Range(0, toEdge * 2));
+        }
+
+        gameObject.transform.position = pos;
     }
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            Debug.LogError("Entered");
             //other.gameObject.TryGetComponent();
             isPickup = !isPickup;
             toRandomLoc();
