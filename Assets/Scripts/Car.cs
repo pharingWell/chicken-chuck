@@ -6,12 +6,17 @@ namespace DefaultNamespace
 {
     public class Car : MonoBehaviour
     {
-        [SerializeField] private float speed = 50f;
+        private float speed = 10f;
         private int turn = -2;
         private readonly int blockTiles = 5;
         private readonly float tileScale = 10f;
         private float damping = 2.5f;
         private Quaternion _rotation;
+
+        private void Start()
+        {
+        }
+
         private void Update()
         {
             gameObject.transform.position += gameObject.transform.forward * (Time.deltaTime * speed);
@@ -31,6 +36,8 @@ namespace DefaultNamespace
                 {
                     damping = 4.5f;
                 }
+
+                turn = -2;
             }
             transform.rotation = Quaternion.Slerp(transform.rotation, _rotation, Time.deltaTime * damping);
         }

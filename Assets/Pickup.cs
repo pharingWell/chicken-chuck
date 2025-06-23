@@ -19,8 +19,9 @@ public class Pickup : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        mapBL = mapCenter - new Vector3(tileSize / 2f, 0, tileSize / 2f) - toEdge * new Vector3(tileSize, 0, tileSize);
+        mapBL = mapCenter - 3.5f * new Vector3(tileSize, 0, tileSize);
         gameObject.transform.position = mapCenter - new Vector3(25f, 0, 25f);
+        isPickup = true;
     }
 
     // Update is called once per frame
@@ -50,13 +51,14 @@ public class Pickup : MonoBehaviour
 
     public void toRandomLoc()
     {
-        gameObject.transform.position = new Vector3(tileSize * Random.Range(0, toEdge * 2), 0,
+        gameObject.transform.position = mapBL + new Vector3(tileSize * Random.Range(0, 8), 0,
             tileSize * Random.Range(0, toEdge * 2));
     }
-    private void OnCollisionEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
+            Debug.LogError("Entered");
             //other.gameObject.TryGetComponent();
             isPickup = !isPickup;
             toRandomLoc();
