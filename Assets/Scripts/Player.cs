@@ -19,6 +19,12 @@ public class Player : MonoBehaviour
 
     public Text speedText;
 
+    public bool hasQuest = true;
+    public Transform destination;
+    public Transform arrow;
+    public Text distanceText;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +34,22 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Vector3 toTarget = destination.position - transform.position;
+
+        // Flatten on Y so arrow doesn't tilt up/down
+        Vector3 flatDirection = new Vector3(toTarget.x, 0f, toTarget.z).normalized;
+
+        // Point the arrow in the direction
+        if (arrow != null)
+            arrow.rotation = Quaternion.LookRotation(flatDirection);
+
+        // Update distance text
+        if (distanceText != null)
+        {
+            float distance = toTarget.magnitude;
+            distanceText.text = Mathf.Round(distance).ToString() + "m";
+        }
+
         InputHandling();
         turnSpeed = turnSpeedAtLowSpeed + (turnSpeedAtMaxSpeed - turnSpeedAtLowSpeed) * Mathf.Pow((rb.velocity.magnitude / maxSpeed), 2);
         speedText.text = Mathf.Round(rb.velocity.magnitude * 2.237f * 10)/10f + " MPH";
